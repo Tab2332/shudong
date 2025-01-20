@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Toaster } from "@/components/ui/toaster";
+import Link from 'next/link'
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,12 +30,12 @@ export default function RootLayout({
           <div className="relative min-h-screen">
             <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
               <div className="container flex h-14 items-center">
-                <div className="flex flex-1 items-center justify-between">
-                  <nav className="flex items-center space-x-6">
-                    <a href="/" className="font-bold">
-                      树洞
-                    </a>
-                  </nav>
+                <div className="mr-4 flex">
+                  <Link href="/" className="mr-6 flex items-center space-x-2">
+                    <span className="font-bold sm:inline-block">树洞</span>
+                  </Link>
+                </div>
+                <div className="flex flex-1 items-center justify-end space-x-2">
                   <ThemeToggle />
                 </div>
               </div>

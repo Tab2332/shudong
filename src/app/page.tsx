@@ -2,12 +2,9 @@ import { Suspense } from 'react'
 import { MessageForm } from '@/components/message-form'
 import { MessageList } from '@/components/message-list'
 import { SearchForm } from '@/components/search-form'
-import { Pagination } from '@/components/pagination'
 import { Message } from '@/types'
 import { messageSchema } from '@/lib/validations/message'
 import * as z from 'zod'
-
-const MESSAGES_PER_PAGE = 10
 
 // 临时使用模拟数据
 const mockMessages: Message[] = [
@@ -31,7 +28,6 @@ export default async function Home({
   searchParams: Promise<{ page: string }>
 }) {
   const params = await searchParams
-  const currentPage = Number(params.page) || 1
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-4xl">
