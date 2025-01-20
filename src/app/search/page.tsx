@@ -3,22 +3,27 @@ import Link from 'next/link'
 import { MessageList } from '@/components/message-list'
 import { SearchForm } from '@/components/search-form'
 import { Button } from '@/components/ui/button'
-import { Message } from '@/types'
+import { supabase } from '@/lib/supabase'
 
-// 临时使用模拟数据
-const mockMessages: Message[] = [
-  {
-    id: '1',
-    recipient_name: '测试用户',
-    content: '这是一条测试留言',
-    created_at: new Date().toISOString(),
+async function getMessages(name: string) {
+  const { data, error } = await supabase
+    .from('messages')
+    .select('*')
+    .ilike('recipient_name', `%${name}%`)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('获取留言失败:', error)
+    return []
   }
-]
+
+  return data
+}
 
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ name: string; page: string }>
+  searchParams: Promise<{ name: string }>
 }) {
   const params = await searchParams
   const { name } = params
@@ -31,6 +36,8 @@ export default async function SearchPage({
       </main>
     )
   }
+
+  const messages = await getMessages(name)
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-4xl">
@@ -46,7 +53,7 @@ export default async function SearchPage({
       </div>
 
       <Suspense fallback={<div>搜索中...</div>}>
-        <MessageList messages={mockMessages} />
+        <MessageList messages={messages} />
       </Suspense>
     </main>
   )
