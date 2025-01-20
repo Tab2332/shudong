@@ -4,7 +4,7 @@ export interface Message {
   content: string
   created_at: string
   ip_address?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export type NewMessage = Omit<Message, 'id' | 'created_at'> 
