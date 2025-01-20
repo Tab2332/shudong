@@ -2,9 +2,8 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { MessageList } from '@/components/message-list'
 import { SearchForm } from '@/components/search-form'
-import { Pagination } from '@/components/pagination'
-import { Message } from '@/types'
 import { Button } from '@/components/ui/button'
+import { Message } from '@/types'
 
 // 临时使用模拟数据
 const mockMessages: Message[] = [
@@ -22,8 +21,7 @@ export default async function SearchPage({
   searchParams: Promise<{ name: string; page: string }>
 }) {
   const params = await searchParams
-  const { name, page } = params
-  const currentPage = Number(page) || 1
+  const { name } = params
 
   if (!name) {
     return (
