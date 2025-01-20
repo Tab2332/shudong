@@ -31,8 +31,20 @@ export default async function SearchPage({
   if (!name) {
     return (
       <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <h1 className="text-2xl font-bold mb-8">搜索留言</h1>
-        <SearchForm />
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold mb-4">搜索留言</h1>
+          <p className="text-lg text-muted-foreground">
+            输入收件人姓名，查找相关留言
+          </p>
+        </div>
+        
+        <div className="max-w-md mx-auto">
+          <SearchForm />
+        </div>
+
+        <div className="mt-12 text-center text-muted-foreground">
+          <p>提示: 搜索是精确匹配的，请确保输入正确的名字</p>
+        </div>
       </main>
     )
   }
@@ -52,9 +64,16 @@ export default async function SearchPage({
         <SearchForm />
       </div>
 
-      <Suspense fallback={<div>搜索中...</div>}>
+      <Suspense fallback={<div className="text-center py-8">搜索中...</div>}>
         <MessageList messages={messages} />
       </Suspense>
+
+      {messages.length === 0 && (
+        <div className="text-center py-8 text-muted-foreground">
+          <p className="mb-2">没有找到相关留言</p>
+          <p>提示: 名字需要完全匹配才能找到留言</p>
+        </div>
+      )}
     </main>
   )
 } 
