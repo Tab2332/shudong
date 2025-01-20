@@ -2,24 +2,40 @@ import { Suspense } from 'react'
 import { MessageForm } from '@/components/message-form'
 import { MessageList } from '@/components/message-list'
 import { SearchForm } from '@/components/search-form'
-import { Message } from '@/types'
 import { messageSchema } from '@/lib/validations/message'
+import { supabase } from '@/lib/supabase'
 import * as z from 'zod'
-
-// 临时使用模拟数据
-const mockMessages: Message[] = [
-  {
-    id: '1',
-    recipient_name: '测试用户',
-    content: '这是一条测试留言',
-    created_at: new Date().toISOString(),
-  }
-]
 
 async function createMessage(data: z.infer<typeof messageSchema>) {
   'use server'
-  console.log('收到新留言:', data)
-  // TODO: 集成Supabase后实现真实的数据存储
+  
+  try {
+    const { error } = await supabase
+      .from('messages')
+      .insert([data])
+      .select()
+      .single()
+
+    if (error) throw error
+  } catch (error) {
+    console.error('创建留言失败:', error)
+    throw error
+  }
+}
+
+async function getLatestMessages() {
+  const { data, error } = await supabase
+    .from('messages')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(10)
+
+  if (error) {
+    console.error('获取最新留言失败:', error)
+    return []
+  }
+
+  return data
 }
 
 export default async function Home({
@@ -28,6 +44,7 @@ export default async function Home({
   searchParams: Promise<{ page: string }>
 }) {
   const params = await searchParams
+  const messages = await getLatestMessages()
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-4xl">
@@ -63,8 +80,8 @@ export default async function Home({
             <p className="text-sm text-muted-foreground mb-4">
               这里会显示最近收到的留言
             </p>
-            <Suspense fallback={<div>加载中...</div>}>
-              <MessageList messages={[]} />
+            <Suspense fallback={<div className="text-center py-8">加载中...</div>}>
+              <MessageList messages={messages} />
             </Suspense>
           </div>
 
