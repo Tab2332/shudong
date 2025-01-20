@@ -27,67 +27,74 @@ function getClientIp(request: NextRequest) {
   return 'unknown'
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const body = await request.json()
-    const validatedData = messageSchema.parse(body)
-    
+    const json = await req.json()
+    const body = messageSchema.parse(json)
+
     const { data, error } = await supabase
       .from('messages')
-      .insert([{
-        ...validatedData,
-        ip_address: getClientIp(request),
-        metadata: {
-          user_agent: request.headers.get('user-agent'),
-        },
-      }])
+      .insert([body])
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json(data)
   } catch (error) {
-    console.error('创建留言失败:', error)
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 400 }
+      )
+    }
     return NextResponse.json(
-      { error: '创建留言失败' },
+      { error: 'Unknown error occurred' },
       { status: 500 }
     )
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(req: Request) {
   try {
-    const { searchParams } = new URL(request.url)
+    const { searchParams } = new URL(req.url)
     const page = Number(searchParams.get('page')) || 1
-    const name = searchParams.get('name')
     const limit = 10
-    const start = (page - 1) * limit
-    const end = start + limit - 1
+    const offset = (page - 1) * limit
 
-    let query = supabase
+    const { data, error, count } = await supabase
       .from('messages')
       .select('*', { count: 'exact' })
       .order('created_at', { ascending: false })
-      .range(start, end)
+      .range(offset, offset + limit - 1)
 
-    if (name) {
-      query = query.ilike('recipient_name', `%${name}%`)
+    if (error) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 500 }
+      )
     }
 
-    const { data: messages, error, count } = await query
-
-    if (error) throw error
-
     return NextResponse.json({
-      messages,
-      totalPages: Math.ceil((count || 0) / limit),
-      currentPage: page,
+      messages: data,
+      total: count,
+      page,
+      totalPages: Math.ceil((count || 0) / limit)
     })
   } catch (error) {
-    console.error('获取留言失败:', error)
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 400 }
+      )
+    }
     return NextResponse.json(
-      { error: '获取留言失败' },
+      { error: 'Unknown error occurred' },
       { status: 500 }
     )
   }
